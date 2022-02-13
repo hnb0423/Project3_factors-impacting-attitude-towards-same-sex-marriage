@@ -9,11 +9,11 @@ The goal of this project is to study factors contributing to people's attitude t
 1.2 Data Cleaning and transformation:
 
 ● All data are in csv format
-● Cleaning process:
+● Cleaning process: <br/>
 a. The data cleaning process is done through R programming
 
 1.3 Visualization & Models
 
-R:
-● Conduct data visualization analysis through R Graphics. 
+R: <br/>
+● Conduct data visualization analysis through R Graphics.  <br/>
 ● Split data into control and treatment groups and apply a series of simple linear regression models. 
