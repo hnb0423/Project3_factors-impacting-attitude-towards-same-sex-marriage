@@ -1,4 +1,4 @@
-# Project 3: factors impacting people's attitude towards same sex marriage
+# Project 3: Factors impacting people's attitude towards same sex marriage
 
 The goal of this project is to study factors contributing to people's attitude towards same-sex marriage and further recommend actions that governments can take to promote social tolerance towards LGBTQ+ community. The factors that I have looked into include legalization of same-sex marriage, interactions with LGBTQ+ people, education, religiosity, and partisanship. 
 
