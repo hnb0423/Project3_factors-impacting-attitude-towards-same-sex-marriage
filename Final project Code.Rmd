@@ -1,0 +1,455 @@
+---
+title: "QTM final project"
+author: "Naibo(Ray) Hu"
+date: "4/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = 'C:/Docs/Babson/QTM3605/Final Project')
+```
+
+#Load File
+```{r}
+year13= read.csv("May13 public.csv")
+year15= read.csv("May15 public.csv")
+year10= read.csv("Sept10 public.csv")
+year17= read.csv("Typology 17 public.csv")
+
+```
+
+# Data Preprocessing
+```{r}
+library(dplyr)
+#2013
+anyNA(year13$q36a)
+year13_v1= filter(year13, q36a !=9)
+year13_v1$lgbtq_marry<- ifelse(year13_v1$q36a== 1 
+                               | year13_v1$q36a== 2 ,1,0)
+#2015
+anyNA(year15$q40)
+year15_v1 = filter(year15, q40 != 9)
+#1 support 0 oppose
+year15_v1$lgbtq_marry<- ifelse(year15_v1$q40== 1 
+                            | year15_v1$q40== 2 ,1,0)
+#2010
+anyNA(year10$q40)
+year10_v1= filter(year10, q40 !=9)
+year10_v1$lgbtq_marry<- ifelse(year10_v1$q40== 1 
+                               | year10_v1$q40== 2 ,1,0)
+#2017
+anyNA(year17$qa128)
+sum(is.na(year17$qa128))
+
+year17_v1= filter(year17, !is.na (year17$qa128))
+year17_v1= filter(year17, qa128 !=9)
+year17_v1$lgbtq_marry<- ifelse(year17_v1$qa128== 1 
+                               | year17_v1$qa128== 2 ,1,0)
+```
+```{r}
+##2013
+anyNA(year13_v1$receduc)
+anyNA(year13_v1$q58) #religion conflict
+anyNA(year13_v1$party)
+anyNA(year13_v1$q61) #interaction
+sum(is.na(year13_v1$q61)) 
+year13_v2 = filter(year13_v1, !is.na(q61), receduc!=9, q58!=9, party!=9, q61!=9)
+
+#2013 interaction (q61)
+unique(year13_v2$q61)
+year13_v2$interaction <- ifelse(year13_v2$q61 == 1, 1,0) #1-yes 0-no
+
+#2013 religion conflict (q58)
+unique(year13_v2$q58)
+year13_v2$relig_conflict <- ifelse(year13_v2$q58 <= 2, 1,0) #1-conflict, 0-no conflict
+
+#2013 education 
+unique(year13_v2$receduc)
+year13_v2$HS_grad <- ifelse(year13_v2$receduc == 1, 1,0) #HS grad or less 
+year13_v2$some_coll <- ifelse(year13_v2$receduc == 2, 1,0) #Some college/Associate Degree
+year13_v2$coll <- ifelse(year13_v2$receduc ==3, 1,0) #Bachelor's degree or higher
+
+#2013 partisanship
+unique(year13_v2$party)
+year13_v2$republic <- ifelse(year13_v2$party == 1, 1,0) #Republican
+year13_v2$democrat <- ifelse(year13_v2$party == 2, 1,0) #Democrat
+year13_v2$other_party <- ifelse(year13_v2$party >= 3, 1,0) #Other: Independent, No preference, Other party 
+
+##2015
+anyNA(year15_v1$educ2)
+anyNA(year15_v1$q49) #religion conflict
+anyNA(year15_v1$party)
+anyNA(year15_v1$q52) #interaction
+sum(is.na(year15_v1$q52))
+year15_v2 = filter(year15_v1, !is.na(q52), educ2!=9, q49!=9, party!=9, q52!=9)
+
+#2015 interaction (q52)
+unique(year15_v2$q52)
+year15_v2$interaction <- ifelse(year15_v2$q52 == 1, 1,0) #1-yes 0-no
+
+#2015 religion conflict
+unique(year15_v2$q49)
+year15_v2$relig_conflict <- ifelse(year15_v2$q49 <= 2, 1,0) #1-conflict, 0-no conflict
+
+#2015 education
+unique(year15_v2$educ2)
+year15_v2$HS_grad <- ifelse(year15_v2$educ2 <= 3, 1,0) #HS grad or less 
+year15_v2$some_coll <- ifelse(year15_v2$educ2 == 4 
+                              | year15_v2$educ2== 5, 1,0) #Some college/Associate Degree
+year15_v2$coll <- ifelse(year15_v2$educ2 >= 6, 1,0) #Bachelor's degree or higher
+
+#2015 partisanship
+unique(year15_v2$party)
+year15_v2$republic <- ifelse(year15_v2$party == 1, 1,0) #Republican
+year15_v2$democrat <- ifelse(year15_v2$party == 2, 1,0) #Democrat
+year15_v2$other_party <- ifelse(year15_v2$party >= 3, 1,0) #Other: Independent, No preference, Other party 
+
+
+```
+
+#National Oppose Percentage
+```{r}
+# 2010 oppose percentage
+count_10=0
+for (i in year10_v1$lgbtq_marry){
+  if(i==0)
+    count_10 = count_10+1
+}
+print(count_10)
+p_10= print(count_10/nrow(year10_v1)*100)
+
+# 2013 oppose percentage
+count_13=0
+for (i in year13_v1$lgbtq_marry ){
+  if(i==0)
+    count_13 = count_13+1
+}
+print(count_13)
+p_13=print(count_13/nrow(year13_v1)*100)
+
+#2015 oppose percentage
+count_15=0
+for (i in year15_v1$lgbtq_marry){
+  if(i==0)
+    count_15= count_15+1
+}
+print(count_15)
+p_15=print(count_15/nrow(year15_v1)*100)
+
+#2017 oppose percentage
+count_17=0
+for (i in year17_v1$lgbtq_marry){
+  if(i==0)
+    count_17=count_17+1 
+}
+print(count_17)
+p_17=print(count_17/nrow(year17_v1)*100)
+```
+
+# Line Chart 1 
+```{r}
+#time series line chart 
+
+# Create the data for the chart.
+v <- c(p_10,p_13,p_15,p_17)
+
+# Plot the bar chart.
+plot(v,type = "o", col = "blue", xlab = "year", ylab = "Percentage",
+     main = "Percentage of people Oppose LGBTQ marriage in U.S.",xaxt = "n",ylim=c(20,60))
+axis(1,at=1:4,labels=c("2010","2013","2015","2017"))
+
+```
+#states pass legalization locally prior 2015
+```{r}
+#California 2013 June
+ca_10=filter(year10_v1, state==6)
+ca_13=filter(year13_v1, state==6)
+ca_15=filter(year15_v1, state==6)
+ca_17=filter(year17_v1, state==6)
+
+#New York 2011 June
+ny_10=filter(year10_v1, state==36)
+ny_13=filter(year13_v1, state==36)
+ny_15=filter(year15_v1, state==36)
+ny_17=filter(year17_v1, state==36)
+
+#Washington 2012 Feb
+wa_10=filter(year10_v1, state==53)
+wa_13=filter(year13_v1, state==53)
+wa_15=filter(year15_v1, state==53)
+wa_17=filter(year17_v1, state==53)
+
+#Virginia 2014 Oct
+va_10=filter(year10_v1, state==51)
+va_13=filter(year13_v1, state==51)
+va_15=filter(year15_v1, state==51)
+va_17=filter(year17_v1, state==51)
+
+#merge data
+pass_10= rbind(ca_10,ny_10, va_10, wa_10)
+pass_13= rbind(ca_13,ny_13, va_13, wa_13)
+pass_15= rbind(ca_15,ny_15, va_15, wa_15)
+pass_17= rbind(ca_17,ny_17, va_17, wa_17)
+
+```
+
+# Percentage
+
+```{r}
+#count10
+count_pass_10=0
+for (i in pass_10$lgbtq_marry){
+  if(i==0)
+    count_pass_10 = count_pass_10+1
+}
+print(count_pass_10)
+pass_p_10= print(count_pass_10/nrow(pass_10)*100)
+
+#count13
+count_pass_13=0
+for (i in pass_13$lgbtq_marry){
+  if(i==0)
+    count_pass_13 = count_pass_13+1
+}
+print(count_pass_13)
+pass_p_13= print(count_pass_13/nrow(pass_13)*100)
+
+#count15
+count_pass_15=0
+for (i in pass_15$lgbtq_marry){
+  if(i==0)
+    count_pass_15 = count_pass_15+1
+}
+print(count_pass_15)
+pass_p_15= print(count_pass_15/nrow(pass_15)*100)
+
+#count17
+count_pass_17=0
+for (i in pass_17$lgbtq_marry){
+  if(i==0)
+    count_pass_17 = count_pass_17+1
+}
+print(count_pass_17)
+pass_p_17= print(count_pass_17/nrow(pass_17)*100)
+```
+
+#States did not pass legalization locally prior 2015
+```{r}
+#Texas
+tx_10=filter(year10_v1, state==48)
+tx_13=filter(year13_v1, state==48)
+tx_15=filter(year15_v1, state==48)
+tx_17=filter(year17_v1, state==48)
+
+#Ohio
+oh_10=filter(year10_v1, state==39)
+oh_13=filter(year13_v1, state==39)
+oh_15=filter(year15_v1, state==39)
+oh_17=filter(year17_v1, state==39)
+
+#Michigan
+mi_10=filter(year10_v1, state==26)
+mi_13=filter(year13_v1, state==26)
+mi_15=filter(year15_v1, state==26)
+mi_17=filter(year17_v1, state==26)
+
+#Georgia
+ga_10=filter(year10_v1, state==13)
+ga_13=filter(year13_v1, state==13)
+ga_15=filter(year15_v1, state==13)
+ga_17=filter(year17_v1, state==13)
+
+#merge data
+npass_10= rbind(tx_10,oh_10, mi_10, ga_10)
+npass_13= rbind(tx_13,oh_13, mi_13, ga_13)
+npass_15= rbind(tx_15,oh_15, mi_15, ga_15)
+npass_17= rbind(tx_17,oh_17, mi_17, ga_17)
+```
+
+#Percentage Oppose
+```{r}
+#count10
+count_npass_10=0
+for (i in npass_10$lgbtq_marry){
+  if(i==0)
+    count_npass_10 = count_npass_10+1
+}
+print(count_npass_10)
+npass_p_10= print(count_npass_10/nrow(npass_10)*100)
+
+#count13
+count_npass_13=0
+for (i in npass_13$lgbtq_marry){
+  if(i==0)
+    count_npass_13 = count_npass_13+1
+}
+print(count_npass_13)
+npass_p_13= print(count_npass_13/nrow(npass_13)*100)
+
+#count15
+count_npass_15=0
+for (i in npass_15$lgbtq_marry){
+  if(i==0)
+    count_npass_15 = count_npass_15+1
+}
+print(count_npass_15)
+npass_p_15= print(count_npass_15/nrow(npass_15)*100)
+
+#count17
+count_npass_17=0
+for (i in npass_17$lgbtq_marry){
+  if(i==0)
+    count_npass_17 = count_npass_17+1
+}
+print(count_npass_17)
+npass_p_17= print(count_npass_17/nrow(npass_17)*100)
+```
+
+#Line Chart 2
+```{r}
+### plot
+xdata <- c(1,2,3,4)
+y1 <- c(p_10,p_13,p_15,p_17)
+y2 <- c(pass_p_10, pass_p_13,pass_p_15, pass_p_17)
+y3 <- c(npass_p_10,npass_p_13,npass_p_15,npass_p_17)
+plot(xdata, y1, type="o", col="blue", pch="o", lty=1, ylim=c(20,60),xaxt = "n",xlab = "year", ylab = "Percentage",
+     main = "Percentage of people oppose LGBTQ marriage in U.S.")
+points(xdata, y2, col="red", pch="*")
+lines(xdata, y2, col="red",lty=2)
+points(xdata, y3, col="orange",pch="+")
+lines(xdata, y3, col="orange", lty=3)
+axis(1,at=1:4,labels=c("2010","2013","2015","2017"))
+```
+
+# Change of Percentage 
+```{r}
+##change of percentage 
+#2010-2013 state not legalize
+ch_1= (npass_p_13- npass_p_10)/npass_p_10
+#2013-2015 state not legalize
+ch_2= (npass_p_15- npass_p_13)/npass_p_13
+#2015-2017 state not legalize
+ch_3= (npass_p_17- npass_p_15)/npass_p_15
+
+#2010-2013 National
+ch_4= (p_13- p_10)/p_10
+#2013-2015 National
+ch_5= (p_15- p_13)/p_13
+#2015-2017 National
+ch_6= (p_17- p_15)/p_15
+
+#2010-2013 state legalize
+ch_7= (pass_p_13- pass_p_10)/pass_p_10
+#2013-2015 state legalize
+ch_8= (pass_p_15- pass_p_13)/pass_p_13
+#2015-2017 state legalize
+ch_9= (pass_p_17- pass_p_15)/pass_p_15
+
+```
+
+
+# Convert sex and race to factors
+```{r}
+library(modelsummary)
+
+year13_v2$racecmb <- as.factor(year13_v2$racecmb)
+year13_v2$sex <- as.factor(year13_v2$sex)
+
+str(year13_v2)
+```
+
+#Interaction
+```{r}
+
+model_interaction_13 <- list()
+model_interaction_13[['interaction1']] = lm(lgbtq_marry~interaction, data = year13_v2)
+model_interaction_13[['interaction2']] = lm(lgbtq_marry~interaction+racecmb+sex+age, data = year13_v2,)
+modelsummary(model_interaction_13, stars = TRUE, title = "Regressions - interactions")
+
+```
+
+# Religious Conflict
+```{r}
+model_relig_conflict_13 <- list()
+model_relig_conflict_13[['conflict1']] = lm(lgbtq_marry~relig_conflict, data = year13_v2)
+model_relig_conflict_13[['conflict2']] = lm(lgbtq_marry~relig_conflict+racecmb+sex+age, data = year13_v2) #control for demographics
+modelsummary(model_relig_conflict_13, stars = TRUE, title = "Regressions - religion conflicts")
+```
+
+# Education
+```{r}
+model_education_13 <- list()
+model_education_13[['HS_grad1']] = lm(lgbtq_marry~HS_grad, data = year13_v2)
+model_education_13[['HS_grad2']] = lm(lgbtq_marry~HS_grad+racecmb+sex+age, data = year13_v2) #control for demographics
+model_education_13[['some_coll1']] = lm(lgbtq_marry~some_coll, data = year13_v2)
+model_education_13[['some_coll2']] = lm(lgbtq_marry~some_coll+racecmb+sex+age, data = year13_v2) #control for demographics
+model_education_13[['coll1']] = lm(lgbtq_marry~coll, data = year13_v2)
+model_education_13[['coll2']] = lm(lgbtq_marry~coll+racecmb+sex+age, data = year13_v2) #control for demographics
+modelsummary(model_education_13, stars = TRUE, title = "Regressions - education levels")
+
+```
+
+#Partisanship
+```{r}
+model_party_13 <- list()
+model_party_13[['Republican1']] = lm(lgbtq_marry~republic, data = year13_v2)
+model_party_13[['Republican2']] = lm(lgbtq_marry~republic+racecmb+sex+age, data = year13_v2) #control for demographics
+model_party_13[['Democrat1']] = lm(lgbtq_marry~democrat, data = year13_v2)
+model_party_13[['Democrat2']] = lm(lgbtq_marry~democrat+racecmb+sex+age, data = year13_v2) #control for demographics
+model_party_13[['Other1']] = lm(lgbtq_marry~other_party, data = year13_v2)
+model_party_13[['Other2']] = lm(lgbtq_marry~other_party+racecmb+sex+age, data = year13_v2) #control for demographics
+modelsummary(model_party_13, stars = TRUE, title = "Regressions - partisanships")
+
+```
+
+#Check Missing Values & Convert to factors
+```{r}
+year15_v2$racecmb <- as.factor(year15_v2$racecmb)
+year15_v2$sex <- as.factor(year15_v2$sex)
+
+str(year15_v2)
+```
+
+#Interaction
+```{r}
+model_interaction_15 <- list()
+model_interaction_15[['interaction1']] = lm(lgbtq_marry~interaction, data = year15_v2)
+model_interaction_15[['interaction2']] = lm(lgbtq_marry~interaction+racecmb+sex+age, data = year15_v2) #control for demographics 
+modelsummary(model_interaction_15, stars = TRUE, title = "Regressions - interactions")
+```
+
+# Religious Conflict 
+```{r}
+
+model_relig_conflict_15 <- list()
+model_relig_conflict_15[['conflict1']] = lm(lgbtq_marry~relig_conflict, data = year15_v2)
+model_relig_conflict_15[['conflict2']] = lm(lgbtq_marry~relig_conflict+racecmb+sex+age, data = year15_v2)
+modelsummary(model_relig_conflict_15, stars = TRUE, title = "Regressions - religion conflicts")
+
+```
+
+# Education
+```{r}
+model_education_15 <- list()
+model_education_15[['HS_grad1']] = lm(lgbtq_marry~HS_grad, data = year15_v2)
+model_education_15[['HS_grad2']] = lm(lgbtq_marry~HS_grad+racecmb+sex+age, data = year15_v2) #control for demographics
+model_education_15[['some_coll1']] = lm(lgbtq_marry~some_coll, data = year15_v2)
+model_education_15[['some_coll2']] = lm(lgbtq_marry~some_coll+racecmb+sex+age, data = year15_v2) #control for demographics
+model_education_15[['coll1']] = lm(lgbtq_marry~coll, data = year15_v2)
+model_education_15[['coll2']] = lm(lgbtq_marry~coll+racecmb+sex+age, data = year15_v2) #control for demographics
+modelsummary(model_education_15, stars = TRUE, title = "Regressions - education levels")
+```
+
+# Partisianship
+```{r}
+model_party_15 <- list()
+model_party_15[['Republican1']] = lm(lgbtq_marry~republic, data = year15_v2)
+model_party_15[['Republican2']] = lm(lgbtq_marry~republic+racecmb+sex+age, data = year15_v2) #control for demographics
+model_party_15[['Democrat1']] = lm(lgbtq_marry~democrat, data = year15_v2)
+model_party_15[['Democrat2']] = lm(lgbtq_marry~democrat+racecmb+sex+age, data = year15_v2) #control for demographics
+model_party_15[['Other1']] = lm(lgbtq_marry~other_party, data = year15_v2)
+model_party_15[['Other2']] = lm(lgbtq_marry~other_party+racecmb+sex+age, data = year15_v2) #control for demographics
+modelsummary(model_party_15, stars = TRUE, title = "Regressions - partisanships")
+```
+
