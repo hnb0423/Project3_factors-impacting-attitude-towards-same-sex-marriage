@@ -4,7 +4,7 @@ The goal of this project is to study factors contributing to people's attitude t
 
 1.1 Raw Data:
 
-● COVID-19: https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset/data
+● Four publicly avaliable datasets from “Pew Research Center,” a U.S. organization that conducts survey by calling randomly selected respondents base on the U.S. Census demographics. The selected datasets contain various survey questions and cover four different time periods: 2010, 2013, 2015, 2017. 
 
 1.2 Data Cleaning and transformation:
 
@@ -15,5 +15,5 @@ a. The data cleaning process is done through R programming
 1.3 Visualization & Models
 
 R:
-● xx
-● xx
+● Conduct data visualization analysis through R Graphics. 
+● Split data into control and treatment groups and apply a series of simple linear regression models. 
